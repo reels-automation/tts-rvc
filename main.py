@@ -4,7 +4,7 @@ import ast
 import shutil
 import logging
 from minio import Minio
-from dotenv import load_dotenv  
+from dotenv import load_dotenv
 from minio.error import S3Error
 from tts.rvc_tts import RvcTTS
 from quixstreams import Application
@@ -14,12 +14,13 @@ from utils import download_all_models, donwload_rmvpe
 
 load_dotenv()
 
-def move_file(path_to_audio:str, new_folder_path:str =f"{TEMP_TTS_AUDIOS}/") -> str:
+
+def move_file(path_to_audio: str, new_folder_path: str = f"{TEMP_TTS_AUDIOS}/") -> str:
     new_path = new_folder_path + path_to_audio
 
     if not os.path.exists(new_folder_path):
         os.makedirs(new_folder_path)
-    
+
     print("Copying the file....")
     print("path to audio: ", path_to_audio)
     print("new path : ", new_path)
@@ -28,9 +29,8 @@ def move_file(path_to_audio:str, new_folder_path:str =f"{TEMP_TTS_AUDIOS}/") -> 
     print("File copied!")
     os.remove(path_to_audio)
 
-    
-    
     return new_path
+
 
 def create_consumer(KAFKA_BROKER):
     return Application(
@@ -41,20 +41,21 @@ def create_consumer(KAFKA_BROKER):
         consumer_poll_timeout=5000,
     )
 
+
 def main():
-    
+
     if not os.path.exists("temp_tts_audios"):
         os.makedirs("temp_tts_audios")
-    
+
     if not os.path.exists("models"):
         os.makedirs("models")
-    
+
     try:
-        with open(TEMP_TXT, 'x') as file:
-            file.write('')
+        with open(TEMP_TXT, "x") as file:
+            file.write("")
     except FileExistsError:
-        print('File already exists')
-    
+        print("File already exists")
+
     download_all_models()
     donwload_rmvpe()
 
@@ -62,24 +63,24 @@ def main():
     MINIO_ADDRESS = os.getenv("MINIO_ADDRESS")
     MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY")
     MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
-    
+
     current_tts = RvcTTS()
-    
+
     app_consumer = create_consumer(KAFKA_BROKER)
 
     minio_client = Minio(
-    MINIO_ADDRESS,
-    access_key=MINIO_ACCESS_KEY,
-    secret_key=MINIO_SECRET_KEY,
-    secure=False
-)
+        MINIO_ADDRESS,
+        access_key=MINIO_ACCESS_KEY,
+        secret_key=MINIO_SECRET_KEY,
+        secure=False,
+    )
     while True:
         try:
             with app_consumer.get_consumer() as consumer:
                 consumer.subscribe(["scripts_video"])
                 while True:
                     try:
-                    
+
                         msg = consumer.poll(10)
                         if msg is None:
                             print("Waiting...")
@@ -88,30 +89,48 @@ def main():
                         else:
                             msg_value = msg.value()
                             consumer.store_offsets(msg)
-                            msg_value_json_response = ast.literal_eval(msg_value.decode("utf-8"))
-                            
+                            msg_value_json_response = ast.literal_eval(
+                                msg_value.decode("utf-8")
+                            )
+
                             print("msg value", msg_value_json_response)
                             script = msg_value_json_response["script"]
-                            
+
                             tema = msg_value_json_response["tema"]
-                            tts_voice = msg_value_json_response["audio_item"][0]["tts_voice"]
+                            tts_voice = msg_value_json_response["audio_item"][0][
+                                "tts_voice"
+                            ]
                             pitch = msg_value_json_response["audio_item"][0]["pitch"]
-                            pth_voice = msg_value_json_response["audio_item"][0]["pth_voice"]
-                            
-                            full_audio_name_path, audio_name = current_tts.generate_tts(script,tts_voice,pth_voice, pitch,tema)
+                            pth_voice = msg_value_json_response["audio_item"][0][
+                                "pth_voice"
+                            ]
+
+                            full_audio_name_path, audio_name = current_tts.generate_tts(
+                                script, tts_voice, pth_voice, pitch, tema
+                            )
                             new_audio_path = full_audio_name_path
                             bucket_name = "audios-tts"
                             destination_file = full_audio_name_path
 
-                            audio_item_save = [{
-                                "tts_audio_name": audio_name,
-                                "tts_audio_directory": bucket_name,
-                                "file_getter":"minio",
-                                "pitch": msg_value_json_response["audio_item"][0]["pitch"],
-                                "tts_voice": msg_value_json_response["audio_item"][0]["tts_voice"],
-                                "tts_rate": msg_value_json_response["audio_item"][0]["tts_rate"],
-                                "pth_voice": msg_value_json_response["audio_item"][0]["pth_voice"],
-                            }]
+                            audio_item_save = [
+                                {
+                                    "tts_audio_name": audio_name,
+                                    "tts_audio_directory": bucket_name,
+                                    "file_getter": "minio",
+                                    "pitch": msg_value_json_response["audio_item"][0][
+                                        "pitch"
+                                    ],
+                                    "tts_voice": msg_value_json_response["audio_item"][
+                                        0
+                                    ]["tts_voice"],
+                                    "tts_rate": msg_value_json_response["audio_item"][
+                                        0
+                                    ]["tts_rate"],
+                                    "pth_voice": msg_value_json_response["audio_item"][
+                                        0
+                                    ]["pth_voice"],
+                                }
+                            ]
 
                             destination_file = os.path.basename(new_audio_path)
                             minio_client.fput_object(
@@ -130,33 +149,51 @@ def main():
                                 print("MESSAGE VAUE: ", msg_value)
                                 print("MESSAGE VAUE 2: ", msg_value)
 
-                                message_builder = MessageBuilder(msg_value_json_response["tema"])
-                                message = (message_builder
-                                    .add_usuario(msg_value_json_response["usuario"])
+                                message_builder = MessageBuilder(
+                                    msg_value_json_response["tema"]
+                                )
+                                message = (
+                                    message_builder.add_usuario(
+                                        msg_value_json_response["usuario"]
+                                    )
                                     .add_idioma(msg_value_json_response["idioma"])
                                     .add_personaje(msg_value_json_response["personaje"])
                                     .add_script(msg_value_json_response["script"])
                                     .add_audio_item(audio_item_save)
-                                    .add_subtitle_item(msg_value_json_response["subtitle_item"])
+                                    .add_subtitle_item(
+                                        msg_value_json_response["subtitle_item"]
+                                    )
                                     .add_author(msg_value_json_response["author"])
-                                    .add_gameplay_name(msg_value_json_response["gameplay_name"])
-                                    .add_background_music(msg_value_json_response["background_music"])
+                                    .add_gameplay_name(
+                                        msg_value_json_response["gameplay_name"]
+                                    )
+                                    .add_background_music(
+                                        msg_value_json_response["background_music"]
+                                    )
                                     .add_images(msg_value_json_response["images"])
-                                    .add_random_images(msg_value_json_response["random_images"])
-                                    .add_random_amount_images(msg_value_json_response["random_amount_images"])
+                                    .add_random_images(
+                                        msg_value_json_response["random_images"]
+                                    )
+                                    .add_random_amount_images(
+                                        msg_value_json_response["random_amount_images"]
+                                    )
                                     .add_gpt_model(msg_value_json_response["gpt_model"])
                                     .build()
                                 )
 
                                 producer.produce(
                                     topic="audio_subtitles",
-                                    key = "Ai Subtitles",
-                                    value = str(message.to_dict())
+                                    key="Ai Subtitles",
+                                    value=str(message.to_dict()),
                                 )
                                 print("Produced. Closing Producer")
                     except ValueError as ex:
-                        print(f"Error in consuming message: {ex}. Recreating consumer...")
-                        consumer = create_consumer(KAFKA_BROKER)  # Recreate consumer on error
+                        print(
+                            f"Error in consuming message: {ex}. Recreating consumer..."
+                        )
+                        consumer = create_consumer(
+                            KAFKA_BROKER
+                        )  # Recreate consumer on error
                         break
                     except ArithmeticError as ex:
                         print(f"Unexpected error: {ex}. Retrying...")
@@ -165,6 +202,7 @@ def main():
         except ArithmeticError as e:
             print(f"Failed to initialize consumer: {e}. Retrying...")
             time.sleep(5)  # Wait before trying again
+
 
 if __name__ == "__main__":
     try:
