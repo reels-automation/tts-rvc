@@ -17,6 +17,7 @@
 *.pyc
 
 # Ignore environment and virtual environment directories
+.env
 env/
 venv/
 
