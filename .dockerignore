@@ -56,6 +56,3 @@ lyrics/
 # Other system files
 .DS_Store
 Thumbs.db
-
-# Custom
-temp_tts_text.txt

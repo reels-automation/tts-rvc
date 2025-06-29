@@ -1,0 +1,23 @@
+services:
+  tts-rvc:
+    build: .
+    environment:
+      PYTHONUNBUFFERED: 1
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      MINIO_ADDRESS: ${MINIO_ADDRESS}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      ADMIN_API: ${ADMIN_API}
+    restart: unless-stopped
+    networks:
+      - local-kafka
+      - minio-network
+      - minio-admin-files
+
+networks:
+  local-kafka:
+    external: true
+  minio-network:
+    external: true
+  minio-admin-files:
+    external: true
