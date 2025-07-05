@@ -6,8 +6,6 @@ from gtts import gTTS
 
 class GoogleTts(ITtsGenerator):
 
-    
-
     def generate_tts(self, script:str, tema:str=None) -> str :
 
         language = 'es'
