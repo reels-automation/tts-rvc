@@ -9,28 +9,10 @@ from minio.error import S3Error
 from tts.rvc_tts import RvcTTS
 from quixstreams import Application
 from message.message import MessageBuilder
-from config import TEMP_TXT, TEMP_TTS_AUDIOS
-from utils import download_all_models, donwload_rmvpe
+from config import TEMP_TXT, TEMP_TTS_AUDIOS, KAFKA_BROKER,MINIO_ACCESS_KEY,MINIO_ADDRESS,MINIO_SECRET_KEY
+from utils import download_all_models, donwload_rmvpe, create_boilerplate_folders
 
 load_dotenv()
-
-def move_file(path_to_audio:str, new_folder_path:str =f"{TEMP_TTS_AUDIOS}/") -> str:
-    new_path = new_folder_path + path_to_audio
-
-    if not os.path.exists(new_folder_path):
-        os.makedirs(new_folder_path)
-    
-    print("Copying the file....")
-    print("path to audio: ", path_to_audio)
-    print("new path : ", new_path)
-    shutil.copy(path_to_audio, new_path)
-    time.sleep(5)
-    print("File copied!")
-    os.remove(path_to_audio)
-
-    
-    
-    return new_path
 
 def create_consumer(KAFKA_BROKER):
     return Application(
@@ -43,26 +25,11 @@ def create_consumer(KAFKA_BROKER):
 
 def main():
     
-    if not os.path.exists("temp_tts_audios"):
-        os.makedirs("temp_tts_audios")
     
-    if not os.path.exists("models"):
-        os.makedirs("models")
-    
-    try:
-        with open(TEMP_TXT, 'x') as file:
-            file.write('')
-    except FileExistsError:
-        print('File already exists')
-    
+    create_boilerplate_folders()
     download_all_models()
     donwload_rmvpe()
 
-    KAFKA_BROKER = os.getenv("KAFKA_BROKER")
-    MINIO_ADDRESS = os.getenv("MINIO_ADDRESS")
-    MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY")
-    MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
-    
     current_tts = RvcTTS()
     
     app_consumer = create_consumer(KAFKA_BROKER)

@@ -2,7 +2,7 @@ import os
 import requests
 import unicodedata
 import re
-from config import MODELS, ADMIN_API, MODELS_FOLDER
+from config import MODELS, ADMIN_API, MODELS_FOLDER, TEMP_TXT
 import urllib.request
 
 def sanitize_attribute(attribute: str):
@@ -83,3 +83,16 @@ def donwload_rmvpe():
             'https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/rmvpe.pt',
             rmvpe_path
         )
+
+def create_boilerplate_folders():
+    if not os.path.exists("temp_tts_audios"):
+        os.makedirs("temp_tts_audios")
+    
+    if not os.path.exists("models"):
+        os.makedirs("models")
+    
+    try:
+        with open(TEMP_TXT, 'x') as file:
+            file.write('')
+    except FileExistsError:
+        print('File already exists')
