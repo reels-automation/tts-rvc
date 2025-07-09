@@ -3,6 +3,7 @@ import requests
 import unicodedata
 import re
 import urllib.request
+import logging
 from config import MODELS, ADMIN_API, MODELS_FOLDER, TEMP_TXT
 from errors.errors import TtsError
 
@@ -100,3 +101,19 @@ def create_boilerplate_folders():
             file.write('')
     except FileExistsError:
         pass
+
+def setup():
+    try:
+        create_boilerplate_folders()
+    except Exception as ex:
+        logging.error("Error al crear carpetas base", exc_info=True)
+
+    try:
+        download_all_models()
+    except Exception as ex:
+        logging.error("Error al descargar los modelos", exc_info=True)
+
+    try:
+        donwload_rmvpe()
+    except Exception as ex:
+        logging.error("Error al descargar RMVPE", exc_info=True)

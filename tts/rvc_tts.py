@@ -56,6 +56,16 @@ class RvcTTS(ITtsGenerator):
     ]
         try:
             result = subprocess.run(command, capture_output=True, text=True)        
+
+            if result.returncode != 0:
+                raise TtsError(
+                mensaje="Error al ejecutar el script TTS",
+                status_code=500,
+                error_log=result.stderr)
+            
+            print("XD: ", result.stderr)
+            print("DOU: ", result.stdout)
+
         except Exception as ex:
             raise TtsError(mensaje=f"Error al ejecutar el raw script de TTS", status_code=500, error_log=ex)
         logging.info("Video creado correctamente: \n %s", result.stdout)

@@ -12,7 +12,7 @@ def main():
             idioma="es"
             personaje="Homero Simpson"
             usuario="43eda5b3-1c2b-424b-b460-c4d49198fc99"
-            script=""
+            script="Holy Molly"
             audio_item=[{'tts_audio_name': '', 'tts_audio_directory': '', 'file_getter': '', 'pitch': 0, 'tts_voice': 'es-ES-XimenaNeural', 'tts_rate': 0, 'pth_voice': 'homero'}]
             print(audio_item[0]["pth_voice"])
             subtitle_item=""

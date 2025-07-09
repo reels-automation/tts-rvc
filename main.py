@@ -10,7 +10,7 @@ from errors.errors import TtsError
 from message.message import MessageBuilder
 from message.message_producer import produce_message
 from config import TEMP_TXT, TEMP_TTS_AUDIOS, KAFKA_BROKER,MINIO_ACCESS_KEY,MINIO_ADDRESS,MINIO_SECRET_KEY
-from utils import download_all_models, donwload_rmvpe, create_boilerplate_folders
+from utils import setup
 from errors.errors import TtsError
 
 load_dotenv()
@@ -26,13 +26,8 @@ def create_consumer(KAFKA_BROKER):
 
 def main():
     
-    try:
-        create_boilerplate_folders()
-        download_all_models()
-        donwload_rmvpe()
-    except Exception as ex:
-        logging.error("Error al descargar los archivos \n Error: %s", ex)
-
+    setup()
+    
     try:
         current_tts = RvcTTS()
         
