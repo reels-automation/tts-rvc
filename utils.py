@@ -2,9 +2,9 @@ import os
 import requests
 import unicodedata
 import re
+import urllib.request
 from config import MODELS, ADMIN_API, MODELS_FOLDER, TEMP_TXT
 from errors.errors import TtsError
-import urllib.request
 
 def sanitize_attribute(attribute: str):
     """Sanitiza un input para que no contenga caracteres que no puedan ser parseados
@@ -58,7 +58,7 @@ def download_model(personaje:str, idioma:str):
             f.write(url_index_response.content)
         
     except Exception as error:
-        raise TtsError(mensaje=f"Unexpected error, couldn't donwload model: {personaje}", status_code=500, error_log=error)
+        raise TtsError(mensaje=f"Error al descargar el modelo: {personaje}", status_code=500, error_log=error)
 
 def download_all_models():
     print("Started to download models")
@@ -71,11 +71,12 @@ def download_all_models():
             personaje = modelo["personaje"]
             idioma = modelo["idioma"]
             download_model(personaje,idioma)
-    except Exception as error:
-        raise TtsError(mensaje="Error al descargar los modelos", status_code=500, error_log=error)
+    except Exception as ex:
+        raise TtsError(mensaje="Error al descargar todos los modelos", status_code=500, error_log=ex)
 
 def donwload_rmvpe():
     try:
+
         rmvpe_path = 'rvc/models/predictors/rmvpe.pt'
         if not os.path.exists(rmvpe_path):
             print("Downloading RMVPE model...")
@@ -85,8 +86,7 @@ def donwload_rmvpe():
                 rmvpe_path
             )
     except Exception as ex:
-        raise TtsError(mensaje="Error al descargar RMVPE model", status_code=500, error_log=ex)
-
+        raise TtsError(mensaje="Error al descargar rmvpe", status_code=500, error_log=ex)
 
 def create_boilerplate_folders():
     if not os.path.exists("temp_tts_audios"):

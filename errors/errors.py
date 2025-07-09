@@ -7,4 +7,4 @@ class TtsError(Exception):
         self.status_code = status_code
 
     def __str__(self):
-        return f"\n [Tts Rvc] \n Message:{self.mensaje} \n Status:{self.status_code} \n Log:{self.error_log} \n"
+        return f"\n [TTS RVC ] \n Message:{self.mensaje} \n Status:{self.status_code} \n Log:{self.error_log} \n"
