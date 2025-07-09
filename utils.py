@@ -2,8 +2,9 @@ import os
 import requests
 import unicodedata
 import re
-from config import MODELS, ADMIN_API, MODELS_FOLDER, TEMP_TXT
 import urllib.request
+from config import MODELS, ADMIN_API, MODELS_FOLDER, TEMP_TXT
+from errors.errors import TtsError
 
 def sanitize_attribute(attribute: str):
     """Sanitiza un input para que no contenga caracteres que no puedan ser parseados
@@ -56,9 +57,8 @@ def download_model(personaje:str, idioma:str):
         with open(file_index_path, "wb") as f:
             f.write(url_index_response.content)
         
-
     except Exception as error:
-        print(f"Unexpected error, couldn't donwload model: {personaje} ", error)
+        raise TtsError(mensaje=f"Error al descargar el modelo: {personaje}", status_code=500, error_log=error)
 
 def download_all_models():
     print("Started to download models")
@@ -71,18 +71,22 @@ def download_all_models():
             personaje = modelo["personaje"]
             idioma = modelo["idioma"]
             download_model(personaje,idioma)
-    except Exception as error:
-        print("Unexpected error trying to download all models: ", error)
+    except Exception as ex:
+        raise TtsError(mensaje="Error al descargar todos los modelos", status_code=500, error_log=ex)
 
 def donwload_rmvpe():
-    rmvpe_path = 'rvc/models/predictors/rmvpe.pt'
-    if not os.path.exists(rmvpe_path):
-        print("Downloading RMVPE model...")
-        os.makedirs(os.path.dirname(rmvpe_path), exist_ok=True)
-        urllib.request.urlretrieve(
-            'https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/rmvpe.pt',
-            rmvpe_path
-        )
+    try:
+
+        rmvpe_path = 'rvc/models/predictors/rmvpe.pt'
+        if not os.path.exists(rmvpe_path):
+            print("Downloading RMVPE model...")
+            os.makedirs(os.path.dirname(rmvpe_path), exist_ok=True)
+            urllib.request.urlretrieve(
+                'https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/rmvpe.pt',
+                rmvpe_path
+            )
+    except Exception as ex:
+        raise TtsError(mensaje="Error al descargar rmvpe", status_code=500, error_log=ex)
 
 def create_boilerplate_folders():
     if not os.path.exists("temp_tts_audios"):
