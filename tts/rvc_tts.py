@@ -26,7 +26,7 @@ class RvcTTS(ITtsGenerator):
             full_audio_path = f"{TEMP_TTS_AUDIOS}/{audio_name}"
 
             if len(tts_voice) == 0:
-            tts_voice =  "es-MX-JorgeNeural"
+                tts_voice =  "es-MX-JorgeNeural"
             
             pth_path = ""
             index_path = ""

@@ -31,7 +31,10 @@ def main():
         create_boilerplate_folders()
         download_all_models()
         donwload_rmvpe()
+    except Exception as ex:
+        logging.error("Error al descargar los archivos \n Error: %s", ex)
 
+    try:
         current_tts = RvcTTS()
         
         app_consumer = create_consumer(KAFKA_BROKER)
