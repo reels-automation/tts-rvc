@@ -1,7 +1,12 @@
 class TtsError(Exception):
 
-    def __init__(self, mensaje, error_log, status_code,):
-        
+    def __init__(
+        self,
+        mensaje,
+        error_log,
+        status_code,
+    ):
+
         self.mensaje = mensaje
         self.error_log = error_log
         self.status_code = status_code
